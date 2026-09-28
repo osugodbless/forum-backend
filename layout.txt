@@ -1,0 +1,56 @@
+my-project/
+├── cmd/
+│   └── server/
+│       ├── main.go              # App bootstrap: configs, DB pool, technical infra, dependency injection
+│       └── routes.go            # Central HTTP router mounting each domain's handlers
+├── internal/
+│   ├── auth/                    # Independent Domain: Authentication & Identity
+│   │   ├── dependencies.go      # Consumer interfaces (e.g., Notifier for welcome/activation emails)
+│   │   ├── handler.go           # HTTP controllers, route registration, JSON request/response encoding
+│   │   ├── model.go             # Domain entities (User, Token, Role)
+│   │   ├── repository.go        # SQL queries scoped strictly to the 'auth.*' schema
+│   │   └── service.go           # Core Auth business logic; receives dependencies via constructor
+│   ├── wallet/                  # Independent Domain: Wallets & Ledger Transactions
+│   │   ├── dependencies.go      # Consumer interfaces (e.g., UserFinder, Notifier for transaction alerts)
+│   │   ├── handler.go           # HTTP controllers for balance lookups, transfers, and deposits
+│   │   ├── model.go             # Domain entities (Wallet, Transaction, LedgerEntry)
+│   │   ├── repository.go        # SQL queries scoped strictly to the 'wallet.*' schema
+│   │   └── service.go           # Core Wallet business logic; accepts injected dependencies
+│   ├── notification/            # Independent Domain: Communications & Dispatch Logic
+│   │   ├── handler.go           # Webhook endpoints (e.g., mail delivery receipts, bounce handlers)
+│   │   ├── model.go             # Domain entities (NotificationLog, UserPreference)
+│   │   ├── repository.go        # Audit trail & status tracking in 'notification.*' schema
+│   │   └── service.go           # Business rules for email/SMS dispatch; satisfies domain Notifier interfaces
+│   └── platform/                # Pure cross-cutting technical infrastructure (Zero Domain Logic)
+│       ├── config/              # Environment variable loading, flags, and validation
+│       │   └── config.go
+│       ├── database/            # Database driver initialization, connection pooling, and ping checks
+│       │   └── postgres.go
+│       ├── mailer/              # Technical transport client (Resend, SES, SMTP)
+│       │   ├── mailer.go        # Mailer client and Send() implementation
+│       │   └── templates/       # Embedded transactional email templates (go:embed)
+│       │       ├── base.tmpl
+│       │       ├── debit_alert.tmpl
+│       │       └── welcome.tmpl
+│       ├── middleware/          # HTTP middlewares (request logging, panic recovery, CORS, tracing)
+│       │   └── middleware.go
+│       ├── response/            # Uniform JSON serialization, error payload mapping, and status helpers
+│       │   └── json.go
+│       └── validator/           # Input validation engine and sanitization helpers
+│           └── validator.go
+├── migrations/                  # Schema-isolated, per-domain database migrations
+│   ├── auth/
+│   │   ├── 000001_create_auth_schema.up.sql
+│   │   └── 000001_create_auth_schema.down.sql
+│   ├── wallet/
+│   │   ├── 000001_create_wallet_schema.up.sql
+│   │   └── 000001_create_wallet_schema.down.sql
+│   └── notification/
+│       ├── 000001_create_notification_schema.up.sql
+│       └── 000001_create_notification_schema.down.sql
+├── .env.example
+├── .gitignore
+├── go.mod
+├── go.sum
+├── Makefile                     # Build, run, test, lint, and scoped migration commands
+└── README.md
