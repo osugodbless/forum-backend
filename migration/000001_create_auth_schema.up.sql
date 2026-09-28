@@ -1,23 +1,3 @@
-CREATE SCHEMA IF NOT EXISTS auth;
-
-CREATE TABLE IF NOT EXISTS auth.users (
-    id SERIAL PRIMARY KEY,
-    username VARCHAR(50) UNIQUE NOT NULL,
-    email VARCHAR(100) UNIQUE NOT NULL,
-    password_hash VARCHAR(255) NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
-CREATE TABLE IF NOT EXISTS auth.profiles (
-    user_id INT PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
-    first_name VARCHAR(50),
-    last_name VARCHAR(50),
-    country VARCHAR(100),
-    photo VARCHAR(255),
-    bio TEXT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
 CREATE TABLE IF NOT EXISTS auth.posts (
     id SERIAL PRIMARY KEY,
     profile_id INT NOT NULL REFERENCES auth.profiles(user_id) ON DELETE CASCADE,
