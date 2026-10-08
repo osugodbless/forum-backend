@@ -2,9 +2,12 @@ package main
 
 import (
 	"flag"
-	"log"
+	"log/slog"
 	"net/http"
+	"os"
 	"time"
+
+	"github.com/osugodbless/forum-backend.git/internal/auth"
 )
 
 func main() {
@@ -12,7 +15,11 @@ func main() {
 	flag.StringVar(&addr, "addr", ":8080", "HTTP network address")
 	flag.Parse()
 
-	mux := http.NewServeMux()
+	logger := slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{}))
+
+	authService := auth.NewService()
+
+	mux := routes(authService)
 
 	server := http.Server{
 		Addr:         addr,
@@ -21,8 +28,11 @@ func main() {
 		WriteTimeout: 10 * time.Second,
 	}
 
-	log.Printf("Starting server on %s", server.Addr)
+	logger.Info("Starting server", "addr", server.Addr)
 
-	err := server.ListenAndServe()
-	log.Fatal(err)
+	if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+		logger.Error(err.Error())
+		os.Exit(1)
+	}
+
 }
