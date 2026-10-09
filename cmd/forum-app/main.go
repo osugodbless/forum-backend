@@ -17,7 +17,7 @@ func main() {
 
 	logger := slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{}))
 
-	authService := auth.NewService()
+	authService := auth.NewService(logger)
 
 	mux := routes(authService)
 
@@ -28,7 +28,7 @@ func main() {
 		WriteTimeout: 10 * time.Second,
 	}
 
-	logger.Info("Starting server", "addr", server.Addr)
+	logger.Info("Starting server", slog.String("addr", server.Addr))
 
 	if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 		logger.Error(err.Error())

@@ -2,14 +2,16 @@ package auth
 
 import (
 	"encoding/json"
+	"log/slog"
 	"net/http"
 )
 
 type Service struct {
+	logger *slog.Logger
 }
 
-func NewService() *Service {
-	return &Service{}
+func NewService(logger *slog.Logger) *Service {
+	return &Service{logger: logger}
 }
 
 func (s *Service) handleSignUp(w http.ResponseWriter, r *http.Request) {
