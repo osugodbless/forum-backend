@@ -2,7 +2,7 @@ package auth
 
 import "net/http"
 
-func AuthRoutes(mux *http.ServeMux, authSV *Service) {
-	mux.HandleFunc("POST /register", authSV.handleSignUp)
-	mux.HandleFunc("POST /login", authSV.handleLogin)
+func (s *Service) RegisterAuthRoutes(mux *http.ServeMux) {
+	mux.HandleFunc("POST /register", s.handleSignUp)
+	mux.HandleFunc("POST /login", s.handleLogin)
 }

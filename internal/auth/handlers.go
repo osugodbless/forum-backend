@@ -21,5 +21,5 @@ func (s *Service) handleSignUp(w http.ResponseWriter, r *http.Request) {
 func (s *Service) handleLogin(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	_ = json.NewEncoder(w).Encode(`{"name": "Godbless", "email": "osugodbless234@gmail.com"}`)
+	_ = json.NewEncoder(w).Encode(json.RawMessage(`{"name": "Godbless", "email": "osugodbless234@gmail.com"}`))
 }

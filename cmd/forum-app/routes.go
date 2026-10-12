@@ -8,6 +8,6 @@ import (
 
 func routes(authSV *auth.Service) *http.ServeMux {
 	mux := http.NewServeMux()
-	auth.AuthRoutes(mux, authSV)
+	authSV.RegisterAuthRoutes(mux)
 	return mux
 }
