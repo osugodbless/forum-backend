@@ -12,7 +12,7 @@ DB_NAME=forumdb
 VERSION?=$(shell git describe --tags --always --dirty 2>/dev/null || echo dev)
 LDFLAGS=-ldflags "-X main.Version=$(VERSION)"
 
-.PHONY: all build clean test lint fmt run dev db-up db-down db-terminal db-logs install help
+.PHONY: all build clean test lint fmt run dev db-terminal db-logs install help
 
 all: fmt test build
 
@@ -50,10 +50,6 @@ run: build
 dev: build
 	@test -f .env || cp .env.example .env; \
 	./bin/$(BINARY_NAME)
-
-## Migrate DB Schema to Database
-db-migrate-up:
-db-migrate-down:
 
 ## db-terminal: Bring up psql interactive terminal
 db-terminal:
