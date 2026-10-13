@@ -1,7 +1,7 @@
 package main
 
 import (
-	"flag"
+	"fmt"
 	"log/slog"
 	"net/http"
 	"os"
@@ -11,18 +11,20 @@ import (
 )
 
 func main() {
-	var addr string
-	flag.StringVar(&addr, "addr", ":8080", "HTTP network address")
-	flag.Parse()
-
 	logger := slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{}))
+
+	cfg, err := LoadConfig()
+	if err != nil {
+		logger.Error(err.Error())
+		os.Exit(1)
+	}
 
 	authService := auth.NewService(logger)
 
 	mux := routes(authService)
 
 	server := http.Server{
-		Addr:         addr,
+		Addr:         fmt.Sprintf("%s:%d", cfg.server.host, cfg.server.port),
 		Handler:      mux,
 		ReadTimeout:  5 * time.Second,
 		WriteTimeout: 10 * time.Second,
