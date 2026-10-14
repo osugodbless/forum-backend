@@ -26,8 +26,10 @@ func main() {
 	server := http.Server{
 		Addr:         fmt.Sprintf("%s:%d", cfg.server.host, cfg.server.port),
 		Handler:      mux,
+		IdleTimeout:  120 * time.Second,
 		ReadTimeout:  5 * time.Second,
 		WriteTimeout: 10 * time.Second,
+		ErrorLog:     slog.NewLogLogger(logger.Handler(), slog.LevelError),
 	}
 
 	logger.Info("Starting server", slog.String("addr", server.Addr))
