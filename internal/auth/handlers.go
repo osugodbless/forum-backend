@@ -37,7 +37,6 @@ func (s *Service) handleLogin(w http.ResponseWriter, r *http.Request) {
 	data := json.RawMessage(`{"name": "Godbless", "email": "osugodbless234@gmail.com"}`)
 	err := s.writeJSON(w, http.StatusOK, envelopeJSON{"user": data}, nil)
 	if err != nil {
-		s.logger.Error(err.Error())
-		http.Error(w, "The server encountered an error and could not process your request", http.StatusInternalServerError)
+		s.serverErrorResponse(w, r, err)
 	}
 }
