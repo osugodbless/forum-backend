@@ -30,6 +30,10 @@ func (s *Service) serverErrorResponse(w http.ResponseWriter, r *http.Request, er
 	s.errorResponse(w, r, http.StatusInternalServerError, "the server encountered a problem and could not process your request")
 }
 
+func (s *Service) badRequestResponse(w http.ResponseWriter, r *http.Request, err error) {
+	s.errorResponse(w, r, http.StatusBadRequest, err.Error())
+}
+
 func (s *Service) notFoundResponse(w http.ResponseWriter, r *http.Request, err error) {
 	s.errorResponse(w, r, http.StatusNotFound, err.Error())
 }
