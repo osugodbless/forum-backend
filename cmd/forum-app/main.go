@@ -19,6 +19,15 @@ func main() {
 		os.Exit(1)
 	}
 
+	pool, err := OpenDB(cfg.DB.URL)
+	if err != nil {
+		logger.Error(err.Error())
+		os.Exit(1)
+	}
+	defer pool.Close()
+
+	logger.Info("Database connected sucessfully")
+
 	authService := auth.NewService(logger)
 
 	mux := routes(authService)
@@ -38,5 +47,9 @@ func main() {
 		logger.Error(err.Error())
 		os.Exit(1)
 	}
+
+}
+
+func Connect() {
 
 }
