@@ -21,11 +21,15 @@ import (
 type envelopeJSON map[string]any
 
 type Service struct {
-	logger *slog.Logger
+	userModel *UserModel
+	logger    *slog.Logger
 }
 
-func NewService(logger *slog.Logger) *Service {
-	return &Service{logger: logger}
+func NewService(logger *slog.Logger, usermodel *UserModel) *Service {
+	return &Service{
+		logger:    logger,
+		userModel: usermodel,
+	}
 }
 
 func (s *Service) handleSignUp(w http.ResponseWriter, r *http.Request) {

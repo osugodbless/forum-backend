@@ -30,7 +30,9 @@ func main() {
 
 	logger.Info("Database connected sucessfully")
 
-	authService := auth.NewService(logger)
+	userModel := auth.NewUserModel(pool)
+
+	authService := auth.NewService(logger, userModel)
 
 	mux := routes(authService)
 

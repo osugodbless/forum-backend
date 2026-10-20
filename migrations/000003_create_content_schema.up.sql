@@ -6,7 +6,6 @@ CREATE TYPE content.reaction_type AS ENUM ('like', 'dislike');
 CREATE TABLE IF NOT EXISTS content.post_categories (
     id uuid PRIMARY KEY,
     name varchar(100) UNIQUE NOT NULL,
-    description text,
     created_at timestamp(0) with time zone NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 

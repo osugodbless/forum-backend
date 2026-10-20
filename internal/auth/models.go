@@ -1,13 +1,11 @@
 package auth
 
-// Example User Model
-// type User struct {
-// 	ID       int    `json:"id"`
-// 	Name     string `json:"name"`
-// 	Email    string `json:"email"`
-// 	Password string `json:"password"`
-// }
+import "time"
 
-// func ValidateUser(v *Validator, user *User) {
-
-// }
+type Users struct {
+	ID           string    `json:"id" db:"id"`
+	Username     string    `json:"username" db:"username"`
+	Email        string    `json:"email" db:"email"`
+	PasswordHash string    `json:"-" db:"password_hash"`
+	CreatedAt    time.Time `json:"created_at" db:"created_at"`
+}
