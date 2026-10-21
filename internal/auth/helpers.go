@@ -9,7 +9,7 @@ import (
 	"strings"
 )
 
-func (s *Service) writeJSON(w http.ResponseWriter, status int, data any, headers map[string]string) error {
+func (h *Handler) writeJSON(w http.ResponseWriter, status int, data any, headers map[string]string) error {
 	payload, err := json.Marshal(data)
 	if err != nil {
 		return err
@@ -28,7 +28,7 @@ func (s *Service) writeJSON(w http.ResponseWriter, status int, data any, headers
 	return nil
 }
 
-func (s *Service) readJSON(w http.ResponseWriter, r *http.Request, dst any) error {
+func (h *Handler) readJSON(w http.ResponseWriter, r *http.Request, dst any) error {
 	// maxBytes is the max payload size allowed
 	maxBytes := 1_048_576
 	r.Body = http.MaxBytesReader(w, r.Body, int64(maxBytes))

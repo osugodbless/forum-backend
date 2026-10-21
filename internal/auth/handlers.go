@@ -20,38 +20,29 @@ import (
 // Usage: envelopeJSON{"user": data}, where data in this instance is the user model
 type envelopeJSON map[string]any
 
-type Service struct {
-	userModel *UserModel
-	logger    *slog.Logger
+type Handler struct {
+	service *Service
+	logger  *slog.Logger
 }
 
-func NewService(logger *slog.Logger, usermodel *UserModel) *Service {
-	return &Service{
-		logger:    logger,
-		userModel: usermodel,
+func NewHandler(logger *slog.Logger, service *Service) *Handler {
+	return &Handler{
+		service: service,
+		logger:  logger,
 	}
 }
 
-func (s *Service) handleSignUp(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) handleSignUp(w http.ResponseWriter, r *http.Request) {
+	var u SignupDTO
 
-}
-
-type User struct {
-	ID       int    `json:"id"`
-	Name     string `json:"name"`
-	Email    string `json:"email"`
-	Password string `json:"password"`
-}
-
-func (s *Service) handleLogin(w http.ResponseWriter, r *http.Request) {
-	var u *User
-	if err := s.readJSON(w, r, &u); err != nil {
-		s.badRequestResponse(w, r, err)
+	err := h.readJSON(w, r, &u)
+	if err != nil {
+		h.badRequestResponse(w, r, err)
 		return
 	}
 
-	err := s.writeJSON(w, http.StatusOK, envelopeJSON{"user": u}, nil)
-	if err != nil {
-		s.serverErrorResponse(w, r, err)
-	}
+}
+
+func (h *Handler) handleLogin(w http.ResponseWriter, r *http.Request) {
+
 }

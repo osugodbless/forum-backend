@@ -7,9 +7,9 @@ import (
 	"github.com/osugodbless/forum-backend.git/internal/auth"
 )
 
-func routes(authSV *auth.Service) *http.ServeMux {
+func routes(authHandler *auth.Handler) *http.ServeMux {
 	mux := http.NewServeMux()
-	authSV.RegisterAuthRoutes(mux)
+	authHandler.RegisterAuthRoutes(mux)
 
 	mux.HandleFunc("/v1/healthcheck", func(w http.ResponseWriter, r *http.Request) {
 		serverHealth := struct {

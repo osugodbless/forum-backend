@@ -2,7 +2,6 @@ package auth
 
 import (
 	"errors"
-	"fmt"
 	"net/http"
 )
 
@@ -13,31 +12,31 @@ var (
 	ErrResourceNotFound   = errors.New("the requested resource could not be found")
 )
 
-func (s *Service) logError(r *http.Request, err error) {
-	s.logger.Error(err.Error(), "method", r.Method, "url", r.URL.RequestURI())
+func (h *Handler) logError(r *http.Request, err error) {
+	h.logger.Error(err.Error(), "method", r.Method, "url", r.URL.RequestURI())
 }
 
-func (s *Service) errorResponse(w http.ResponseWriter, r *http.Request, status int, message any) {
-	err := s.writeJSON(w, status, envelopeJSON{"error": message}, nil)
+func (h *Handler) errorResponse(w http.ResponseWriter, r *http.Request, status int, message any) {
+	err := h.writeJSON(w, status, envelopeJSON{"error": message}, nil)
 	if err != nil {
-		s.logError(r, err)
+		h.logError(r, err)
 		http.Error(w, "The server encountered a problem and could not process your request", http.StatusInternalServerError)
 	}
 }
 
-func (s *Service) serverErrorResponse(w http.ResponseWriter, r *http.Request, err error) {
-	s.logError(r, err)
-	s.errorResponse(w, r, http.StatusInternalServerError, "the server encountered a problem and could not process your request")
+func (h *Handler) serverErrorResponse(w http.ResponseWriter, r *http.Request, err error) {
+	h.logError(r, err)
+	h.errorResponse(w, r, http.StatusInternalServerError, "the server encountered a problem and could not process your request")
 }
 
-func (s *Service) badRequestResponse(w http.ResponseWriter, r *http.Request, err error) {
-	s.errorResponse(w, r, http.StatusBadRequest, err.Error())
+func (h *Handler) badRequestResponse(w http.ResponseWriter, r *http.Request, err error) {
+	h.errorResponse(w, r, http.StatusBadRequest, err.Error())
 }
 
-func (s *Service) notFoundResponse(w http.ResponseWriter, r *http.Request, err error) {
-	s.errorResponse(w, r, http.StatusNotFound, err.Error())
+func (h *Handler) notFoundResponse(w http.ResponseWriter, r *http.Request, err error) {
+	h.errorResponse(w, r, http.StatusNotFound, err.Error())
 }
 
-func (s *Service) methodNotAllowedResponse(w http.ResponseWriter, r *http.Request) {
-	s.errorResponse(w, r, http.StatusMethodNotAllowed, fmt.Sprintf("the %s method is not allowed for the requested resource", r.Method))
-}
+// func (h *Handler) methodNotAllowedResponse(w http.ResponseWriter, r *http.Request) {
+// 	h.errorResponse(w, r, http.StatusMethodNotAllowed, fmt.Sprintf("the %s method is not allowed for the requested resource", r.Method))
+// }

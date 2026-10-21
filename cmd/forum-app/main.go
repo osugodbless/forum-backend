@@ -34,7 +34,9 @@ func main() {
 
 	authService := auth.NewService(logger, userModel)
 
-	mux := routes(authService)
+	authHandler := auth.NewHandler(logger, authService)
+
+	mux := routes(authHandler)
 
 	server := http.Server{
 		Addr:         fmt.Sprintf("%s:%d", cfg.server.host, cfg.server.port),
