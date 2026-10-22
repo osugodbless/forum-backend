@@ -7,8 +7,8 @@ CREATE TABLE IF NOT EXISTS profile.profiles (
     last_name text NOT NULL,
     country char(2),
     bio text,
-    created_at timestamp(0) with time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at timestamp(0) with time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    created_at timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT uq_profile_username UNIQUE (username),
     CONSTRAINT chk_profile_username_length CHECK (char_length(username) BETWEEN 3 AND 30),

@@ -4,7 +4,7 @@ CREATE TABLE IF NOT EXISTS auth.users (
     id uuid PRIMARY KEY,
     email text NOT NULL,
     password_hash text NOT NULL,
-    created_at timestamp(0) with time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    created_at timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     -- Uniqueness constraints
     CONSTRAINT uq_users_email UNIQUE (email),
