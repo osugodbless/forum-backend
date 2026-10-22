@@ -1,12 +1,17 @@
 CREATE SCHEMA IF NOT EXISTS profile;
 
 CREATE TABLE IF NOT EXISTS profile.profiles (
-    id uuid PRIMARY KEY,
-    user_id uuid UNIQUE NOT NULL, --Logical reference to auth.users(id)
-    first_name varchar(50),
-    last_name varchar(50),
-    country varchar(100),
-    photo varchar(255),
+    user_id uuid PRIMARY KEY, --Logical reference to auth.users(id)
+    username text NOT NULL,
+    first_name text NOT NULL,
+    last_name text NOT NULL,
+    country char(2),
     bio text,
-    created_at timestamp(0) with time zone NOT NULL DEFAULT CURRENT_TIMESTAMP
+    created_at timestamp(0) with time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at timestamp(0) with time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT uq_profile_username UNIQUE (username),
+    CONSTRAINT chk_profile_username_length CHECK (char_length(username) BETWEEN 3 AND 30),
+    CONSTRAINT chk_profile_username_lowercase CHECK (username = LOWER(username)),
+    CONSTRAINT chk_profiles_bio_length CHECK (bio IS NULL OR char_length(bio) <= 300)
 );
