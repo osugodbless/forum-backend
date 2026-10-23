@@ -1,6 +1,6 @@
 CREATE SCHEMA IF NOT EXISTS content;
 
-CREATE TYPE IF NOT EXISTS content.reaction_type AS ENUM ('like', 'dislike');
+CREATE TYPE content.reaction_type AS ENUM ('like', 'dislike');
 
 -- Categories
 CREATE TABLE IF NOT EXISTS content.post_categories (
