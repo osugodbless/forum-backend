@@ -14,11 +14,13 @@ type User struct {
 	CreatedAt    time.Time `json:"created_at" db:"created_at"`
 }
 
-func ValidateUser()
+func ValidateUser() {
+
+}
 
 // DTOs (Data Transfer Object)
 type SignupDTO struct {
-	Username string `json:"username"`
+	FullName string `json:"full_name"`
 	Email    string `json:"email"`
 	Password string `json:"password"`
 }
