@@ -40,3 +40,7 @@ func (h *Handler) notFoundResponse(w http.ResponseWriter, r *http.Request, err e
 // func (h *Handler) methodNotAllowedResponse(w http.ResponseWriter, r *http.Request) {
 // 	h.errorResponse(w, r, http.StatusMethodNotAllowed, fmt.Sprintf("the %s method is not allowed for the requested resource", r.Method))
 // }
+
+func (h *Handler) failedValidationResponse(w http.ResponseWriter, r *http.Request, errors map[string]string) {
+	h.errorResponse(w, r, http.StatusUnprocessableEntity, errors)
+}

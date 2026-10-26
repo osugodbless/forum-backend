@@ -7,7 +7,7 @@ import (
 // EmailRX is a regular expression for sanity checking the format of email addresses. The regular expression pattern is
 // taken from https://html.spec.whatwg.org/#valid-e-mail-address.
 var (
-	EmailRX = regexp.MustCompile("^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$")
+	EmailRX = regexp.MustCompile("^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)+$")
 )
 
 // Validator is a custom type which holds a map of validation errors.
@@ -17,7 +17,7 @@ type Validator struct {
 }
 
 // New creates a new Validator instance with an empty errors map.
-func New() *Validator {
+func NewValidator() *Validator {
 	return &Validator{Errors: make(map[string]string)}
 }
 

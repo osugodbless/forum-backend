@@ -41,6 +41,14 @@ func (h *Handler) handleSignUp(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	v := NewValidator()
+	if ValidateUser(v, &u); !v.Valid() {
+		h.failedValidationResponse(w, r, v.Errors)
+		return
+	}
+
+	h.writeJSON(w, http.StatusOK, u, nil)
+
 }
 
 func (h *Handler) handleLogin(w http.ResponseWriter, r *http.Request) {
