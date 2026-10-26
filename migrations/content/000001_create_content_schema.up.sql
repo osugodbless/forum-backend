@@ -21,7 +21,7 @@ CREATE TABLE IF NOT EXISTS content.posts (
     updated_at timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT chk_posts_title_length CHECK (title IS NULL OR char_length(trim(title)) BETWEEN 3 AND 255),
-    CONSTRAINT chk_posts_content_not_empty CHECK (char_length(trim(content)) > 7)
+    CONSTRAINT chk_posts_content_not_empty CHECK (char_length(trim(content)) BETWEEN 7 AND 3000)
 );
 
 -- Lookup indexes for author history and reverse chronological feeds
