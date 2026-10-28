@@ -12,6 +12,10 @@ import (
 	"github.com/osugodbless/forum-backend.git/internal/auth"
 )
 
+func init() {
+	time.Local = time.UTC
+}
+
 func main() {
 	logger := slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{}))
 
@@ -61,7 +65,12 @@ func OpenDB(dsn string) (*pgxpool.Pool, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	pool, err := pgxpool.New(ctx, dsn)
+	cfg, err := pgxpool.ParseConfig(dsn)
+	if err != nil {
+		return nil, fmt.Errorf("Unable to parse database config: %s\n", err)
+	}
+
+	pool, err := pgxpool.NewWithConfig(ctx, cfg)
 	if err != nil {
 		return nil, fmt.Errorf("Unable to create database pool: %s\n", err)
 	}

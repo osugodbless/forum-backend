@@ -1,8 +1,10 @@
 package auth
 
 import (
+	"errors"
 	"log/slog"
 	"net/http"
+	"strings"
 )
 
 // envelopeJSON envelopes response JSON data in a parent string
@@ -41,13 +43,31 @@ func (h *Handler) handleSignUp(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Normalize payload data
+	u.FullName = strings.Join(strings.Fields(u.FullName), " ")
+	u.Email = strings.ToLower(strings.TrimSpace(u.Email))
+
 	v := NewValidator()
 	if ValidateUser(v, &u); !v.Valid() {
 		h.failedValidationResponse(w, r, v.Errors)
 		return
 	}
 
-	h.writeJSON(w, http.StatusOK, u, nil)
+	user, err := h.service.SignUp(r.Context(), u)
+	if err != nil {
+		switch {
+		case errors.Is(err, ErrUserAlreadyExists):
+			h.requestConflictResponse(w, r, ErrUserAlreadyExists)
+		default:
+			h.serverErrorResponse(w, r, err)
+		}
+		return
+	}
+
+	err = h.writeJSON(w, http.StatusCreated, envelopeJSON{"user": user}, nil)
+	if err != nil {
+		h.serverErrorResponse(w, r, err)
+	}
 
 }
 

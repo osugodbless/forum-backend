@@ -7,13 +7,13 @@ import (
 
 var (
 	ErrUserNotFound       = errors.New("user not found")
-	ErrUserAlreadyExists  = errors.New("username or email already in use")
+	ErrUserAlreadyExists  = errors.New("email already in use")
 	ErrInvalidCredentials = errors.New("invalid email or password")
 	ErrResourceNotFound   = errors.New("the requested resource could not be found")
 )
 
 func (h *Handler) logError(r *http.Request, err error) {
-	h.logger.Error(err.Error(), "method", r.Method, "url", r.URL.RequestURI())
+	h.logger.Error("http request failed", "error", err.Error(), "method", r.Method, "url", r.URL.RequestURI())
 }
 
 func (h *Handler) errorResponse(w http.ResponseWriter, r *http.Request, status int, message any) {
@@ -43,4 +43,8 @@ func (h *Handler) notFoundResponse(w http.ResponseWriter, r *http.Request, err e
 
 func (h *Handler) failedValidationResponse(w http.ResponseWriter, r *http.Request, errors map[string]string) {
 	h.errorResponse(w, r, http.StatusUnprocessableEntity, errors)
+}
+
+func (h *Handler) requestConflictResponse(w http.ResponseWriter, r *http.Request, err error) {
+	h.errorResponse(w, r, http.StatusConflict, err.Error())
 }
