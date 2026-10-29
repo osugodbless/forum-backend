@@ -34,7 +34,7 @@ func (u *UserModel) Create(ctx context.Context, user *domain.User) error {
 		if errors.As(err, &pgErr) {
 			switch pgErr.Code {
 			case pgerrcode.UniqueViolation:
-				return fmt.Errorf("%w: %w", "email already exists", err)
+				return fmt.Errorf("%w: %w", domain.ErrUserAlreadyExists, err)
 			default:
 				return fmt.Errorf("unexpected error creating user: %w", err)
 			}

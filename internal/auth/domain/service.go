@@ -2,16 +2,22 @@ package domain
 
 import (
 	"context"
+	"errors"
 	"fmt"
-	"log/slog"
 
 	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
 )
 
+var (
+	ErrUserNotFound       = errors.New("user not found")
+	ErrUserAlreadyExists  = errors.New("email already in use")
+	ErrInvalidCredentials = errors.New("invalid email or password")
+	ErrResourceNotFound   = errors.New("the requested resource could not be found")
+)
+
 type AuthService struct {
-	store  AuthStore
-	logger *slog.Logger
+	store AuthStore
 }
 
 func NewAuthService(store AuthStore) *AuthService {

@@ -62,8 +62,8 @@ func (h *Handler) handleSignUp(w http.ResponseWriter, r *http.Request) {
 	})
 	if err != nil {
 		switch {
-		case errors.Is(err, ErrUserAlreadyExists):
-			h.requestConflictResponse(w, r, ErrUserAlreadyExists)
+		case errors.Is(err, domain.ErrUserAlreadyExists):
+			h.requestConflictResponse(w, r, domain.ErrUserAlreadyExists)
 		default:
 			h.serverErrorResponse(w, r, err)
 		}

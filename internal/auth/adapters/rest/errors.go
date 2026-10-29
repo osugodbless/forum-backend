@@ -1,15 +1,7 @@
 package rest
 
 import (
-	"errors"
 	"net/http"
-)
-
-var (
-	ErrUserNotFound       = errors.New("user not found")
-	ErrUserAlreadyExists  = errors.New("email already in use")
-	ErrInvalidCredentials = errors.New("invalid email or password")
-	ErrResourceNotFound   = errors.New("the requested resource could not be found")
 )
 
 func (h *Handler) logError(r *http.Request, err error) {
