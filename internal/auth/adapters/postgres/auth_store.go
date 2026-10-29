@@ -1,11 +1,11 @@
-package auth
+package postgres
 
 import (
 	"context"
 	"errors"
 	"fmt"
 
-	"github.com/google/uuid"
+	"github.com/osugodbless/forum-backend.git/internal/auth/domain"
 
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5/pgconn"
@@ -20,7 +20,7 @@ func NewUserModel(pool *pgxpool.Pool) *UserModel {
 	return &UserModel{pool: pool}
 }
 
-func (u *UserModel) Create(ctx context.Context, user *User) error {
+func (u *UserModel) Create(ctx context.Context, user *domain.User) error {
 
 	const query = `
 		INSERT INTO auth.users (id, email, password_hash)
@@ -34,7 +34,7 @@ func (u *UserModel) Create(ctx context.Context, user *User) error {
 		if errors.As(err, &pgErr) {
 			switch pgErr.Code {
 			case pgerrcode.UniqueViolation:
-				return fmt.Errorf("%w: %w", ErrUserAlreadyExists, err)
+				return fmt.Errorf("%w: %w", "email already exists", err)
 			default:
 				return fmt.Errorf("unexpected error creating user: %w", err)
 			}
@@ -44,14 +44,14 @@ func (u *UserModel) Create(ctx context.Context, user *User) error {
 	return nil
 }
 
-func (u *UserModel) GetByEmail(ctx context.Context, email string) (*User, error) {
-	return nil, nil
-}
+// func (u *UserModel) GetByEmail(ctx context.Context, email string) (*User, error) {
+// 	return nil, nil
+// }
 
-func (u *UserModel) GetByID(ctx context.Context, id uuid.UUID) (*User, error) {
-	return nil, nil
-}
+// func (u *UserModel) GetByID(ctx context.Context, id uuid.UUID) (*User, error) {
+// 	return nil, nil
+// }
 
-func (u *UserModel) Update(ctx context.Context, user *User) error {
-	return nil
-}
+// func (u *UserModel) Update(ctx context.Context, user *User) error {
+// 	return nil
+// }

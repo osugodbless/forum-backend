@@ -1,4 +1,4 @@
-package auth
+package domain
 
 import (
 	"context"
@@ -9,19 +9,24 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-type Service struct {
-	store  *UserModel
+type AuthService struct {
+	store  AuthStore
 	logger *slog.Logger
 }
 
-func NewService(logger *slog.Logger, usermodel *UserModel) *Service {
-	return &Service{
-		logger: logger,
-		store:  usermodel,
+func NewAuthService(store AuthStore) *AuthService {
+	return &AuthService{
+		store: store,
 	}
 }
 
-func (s *Service) SignUp(ctx context.Context, dto SignupDTO) (*User, error) {
+type SignupInput struct {
+	FullName string
+	Email    string
+	Password string
+}
+
+func (s *AuthService) SignUp(ctx context.Context, dto SignupInput) (*User, error) {
 	bytes, err := bcrypt.GenerateFromPassword([]byte(dto.Password), bcrypt.DefaultCost)
 	if err != nil {
 		return nil, fmt.Errorf("error hashing password: %w", err)
@@ -41,6 +46,6 @@ func (s *Service) SignUp(ctx context.Context, dto SignupDTO) (*User, error) {
 	return user, nil
 }
 
-func (s *Service) Login() {
+func (s *AuthService) Login() {
 
 }

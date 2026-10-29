@@ -34,13 +34,9 @@ func main() {
 
 	logger.Info("Database connected sucessfully")
 
-	userModel := auth.NewUserModel(pool)
+	auth := auth.New(pool, logger)
 
-	authService := auth.NewService(logger, userModel)
-
-	authHandler := auth.NewHandler(logger, authService)
-
-	mux := routes(authHandler)
+	mux := routes(auth)
 
 	server := http.Server{
 		Addr:         fmt.Sprintf("%s:%d", cfg.server.host, cfg.server.port),

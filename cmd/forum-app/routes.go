@@ -3,13 +3,18 @@ package main
 import (
 	"encoding/json"
 	"net/http"
-
-	"github.com/osugodbless/forum-backend.git/internal/auth"
 )
 
-func routes(authHandler *auth.Handler) *http.ServeMux {
+type Module interface {
+	RegisterRoutes(mux *http.ServeMux)
+}
+
+func routes(modules ...Module) *http.ServeMux {
 	mux := http.NewServeMux()
-	authHandler.RegisterAuthRoutes(mux)
+
+	for _, module := range modules {
+		module.RegisterRoutes(mux)
+	}
 
 	mux.HandleFunc("/v1/healthcheck", func(w http.ResponseWriter, r *http.Request) {
 		serverHealth := struct {

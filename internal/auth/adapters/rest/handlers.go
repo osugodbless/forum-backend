@@ -1,10 +1,12 @@
-package auth
+package rest
 
 import (
 	"errors"
 	"log/slog"
 	"net/http"
 	"strings"
+
+	"github.com/osugodbless/forum-backend.git/internal/auth/domain"
 )
 
 // envelopeJSON envelopes response JSON data in a parent string
@@ -23,11 +25,11 @@ import (
 type envelopeJSON map[string]any
 
 type Handler struct {
-	service *Service
+	service AuthService
 	logger  *slog.Logger
 }
 
-func NewHandler(logger *slog.Logger, service *Service) *Handler {
+func NewHandler(logger *slog.Logger, service AuthService) *Handler {
 	return &Handler{
 		service: service,
 		logger:  logger,
@@ -35,7 +37,7 @@ func NewHandler(logger *slog.Logger, service *Service) *Handler {
 }
 
 func (h *Handler) handleSignUp(w http.ResponseWriter, r *http.Request) {
-	var u SignupDTO
+	var u SignupRequest
 
 	err := h.readJSON(w, r, &u)
 	if err != nil {
@@ -53,7 +55,11 @@ func (h *Handler) handleSignUp(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user, err := h.service.SignUp(r.Context(), u)
+	user, err := h.service.SignUp(r.Context(), domain.SignupInput{
+		FullName: u.FullName,
+		Email:    u.Email,
+		Password: u.Password,
+	})
 	if err != nil {
 		switch {
 		case errors.Is(err, ErrUserAlreadyExists):
