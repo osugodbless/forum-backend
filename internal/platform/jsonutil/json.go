@@ -1,15 +1,27 @@
-package rest
+package jsonutil
 
 import (
 	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
+	"log/slog"
 	"net/http"
 	"strings"
 )
 
-func (h *Handler) writeJSON(w http.ResponseWriter, status int, data any, headers map[string]string) error {
+// envelopeJSON envelopes response JSON data in a parent string
+type EnvelopeJSON map[string]any
+
+type Responder struct {
+	logger *slog.Logger
+}
+
+func NewResponder(logger *slog.Logger) *Responder {
+	return &Responder{logger: logger}
+}
+
+func (res *Responder) WriteJSON(w http.ResponseWriter, status int, data any, headers map[string]string) error {
 	payload, err := json.Marshal(data)
 	if err != nil {
 		return err
@@ -28,7 +40,7 @@ func (h *Handler) writeJSON(w http.ResponseWriter, status int, data any, headers
 	return nil
 }
 
-func (h *Handler) readJSON(w http.ResponseWriter, r *http.Request, dst any) error {
+func (res *Responder) ReadJSON(w http.ResponseWriter, r *http.Request, dst any) error {
 	// maxBytes is the max payload size allowed
 	maxBytes := 1_048_576
 	r.Body = http.MaxBytesReader(w, r.Body, int64(maxBytes))
@@ -86,4 +98,41 @@ func (h *Handler) readJSON(w http.ResponseWriter, r *http.Request, dst any) erro
 	}
 
 	return nil
+}
+
+func (res *Responder) logError(r *http.Request, err error) {
+	res.logger.Error("http request failed", "error", err.Error(), "method", r.Method, "url", r.URL.RequestURI())
+}
+
+func (res *Responder) ErrorResponse(w http.ResponseWriter, r *http.Request, status int, message any) {
+	err := res.WriteJSON(w, status, EnvelopeJSON{"error": message}, nil)
+	if err != nil {
+		res.logError(r, err)
+		http.Error(w, "The server encountered a problem and could not process your request", http.StatusInternalServerError)
+	}
+}
+
+func (res *Responder) ServerErrorResponse(w http.ResponseWriter, r *http.Request, err error) {
+	res.logError(r, err)
+	res.ErrorResponse(w, r, http.StatusInternalServerError, "the server encountered a problem and could not process your request")
+}
+
+func (res *Responder) BadRequestResponse(w http.ResponseWriter, r *http.Request, err error) {
+	res.ErrorResponse(w, r, http.StatusBadRequest, err.Error())
+}
+
+func (res *Responder) NotFoundResponse(w http.ResponseWriter, r *http.Request, err error) {
+	res.ErrorResponse(w, r, http.StatusNotFound, err.Error())
+}
+
+// func (res *Responder) MethodNotAllowedResponse(w http.ResponseWriter, r *http.Request) {
+// 	res.ErrorResponse(w, r, http.StatusMethodNotAllowed, fmt.Sprintf("the %s method is not allowed for the requested resource", r.Method))
+// }
+
+func (res *Responder) FailedValidationResponse(w http.ResponseWriter, r *http.Request, errors map[string]string) {
+	res.ErrorResponse(w, r, http.StatusUnprocessableEntity, errors)
+}
+
+func (res *Responder) RequestConflictResponse(w http.ResponseWriter, r *http.Request, err error) {
+	res.ErrorResponse(w, r, http.StatusConflict, err.Error())
 }

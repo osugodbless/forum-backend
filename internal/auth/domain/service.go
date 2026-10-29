@@ -46,7 +46,7 @@ func (s *AuthService) SignUp(ctx context.Context, dto SignupInput) (*User, error
 
 	err = s.store.Create(ctx, user)
 	if err != nil {
-		return nil, fmt.Errorf("user service: %w", err)
+		return nil, fmt.Errorf("auth service: %w", err)
 	}
 
 	return user, nil
