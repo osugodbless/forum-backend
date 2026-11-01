@@ -1,6 +1,7 @@
 package validator
 
 import (
+	"fmt"
 	"regexp"
 )
 
@@ -14,6 +15,14 @@ var (
 // The keys in the map are the names of the fields which failed validation, and the values are the corresponding error messages.
 type Validator struct {
 	Errors map[string]string
+}
+
+func (v *Validator) Error() string {
+	return fmt.Sprintf("validation failed: %v", v.Errors)
+}
+
+func NewValidatorError(errors map[string]string) *Validator {
+	return &Validator{Errors: errors}
 }
 
 // New creates a new Validator instance with an empty errors map.

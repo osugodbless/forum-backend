@@ -3,7 +3,6 @@ package restapi
 import (
 	"errors"
 	"net/http"
-	"strings"
 
 	"github.com/osugodbless/forum-backend.git/internal/auth/domain"
 	"github.com/osugodbless/forum-backend.git/internal/platform/jsonutil"
@@ -31,25 +30,20 @@ func (h *Handler) handleSignUp(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Normalize payload data
-	u.FullName = strings.Join(strings.Fields(u.FullName), " ")
-	u.Email = strings.ToLower(strings.TrimSpace(u.Email))
-
-	v := validator.NewValidator()
-	if ValidateUser(v, &u); !v.Valid() {
-		h.FailedValidationResponse(w, r, v.Errors)
-		return
-	}
-
 	user, err := h.service.SignUp(r.Context(), domain.SignupInput{
 		FullName: u.FullName,
 		Email:    u.Email,
 		Password: u.Password,
 	})
 	if err != nil {
+		var validationErr *validator.Validator
 		switch {
+		case errors.As(err, &validationErr):
+			h.FailedValidationResponse(w, r, validationErr.Errors)
 		case errors.Is(err, domain.ErrUserAlreadyExists):
 			h.RequestConflictResponse(w, r, domain.ErrUserAlreadyExists)
+		case errors.Is(err, domain.ErrIDGeneration):
+			h.ServerErrorResponse(w, r, domain.ErrIDGeneration)
 		default:
 			h.ServerErrorResponse(w, r, err)
 		}
