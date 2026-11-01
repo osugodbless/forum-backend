@@ -2,6 +2,7 @@ package restapi
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
 
 	"github.com/osugodbless/forum-backend.git/internal/auth/domain"
@@ -50,11 +51,22 @@ func (h *Handler) handleSignUp(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = h.WriteJSON(w, http.StatusCreated, jsonutil.EnvelopeJSON{"user": user}, nil)
+	headers := make(http.Header)
+	headers.Set("Location", fmt.Sprintf("/v1/users/%s", user.ID.String()))
+
+	err = h.WriteJSON(w, http.StatusCreated, toUserResponse(user), headers)
 	if err != nil {
 		h.ServerErrorResponse(w, r, err)
 	}
 
+}
+
+func toUserResponse(user *domain.User) *UserResponse {
+	return &UserResponse{
+		ID:        user.ID.String(),
+		Email:     user.Email,
+		CreatedAt: user.CreatedAt,
+	}
 }
 
 func (h *Handler) handleLogin(w http.ResponseWriter, r *http.Request) {

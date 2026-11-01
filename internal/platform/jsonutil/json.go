@@ -21,7 +21,7 @@ func NewResponder(logger *slog.Logger) *Responder {
 	return &Responder{logger: logger}
 }
 
-func (res *Responder) WriteJSON(w http.ResponseWriter, status int, data any, headers map[string]string) error {
+func (res *Responder) WriteJSON(w http.ResponseWriter, status int, data any, headers http.Header) error {
 	payload, err := json.Marshal(data)
 	if err != nil {
 		return err
@@ -30,7 +30,7 @@ func (res *Responder) WriteJSON(w http.ResponseWriter, status int, data any, hea
 	payload = append(payload, '\n')
 
 	for key, value := range headers {
-		w.Header().Set(key, value)
+		w.Header()[key] = value
 	}
 
 	w.Header().Set("Content-Type", "application/json")

@@ -9,10 +9,10 @@ import (
 )
 
 type User struct {
-	ID           uuid.UUID `json:"id" db:"id"`
-	Email        string    `json:"email" db:"email"`
-	PasswordHash string    `json:"-" db:"password_hash"`
-	CreatedAt    time.Time `json:"created_at" db:"created_at"`
+	ID           uuid.UUID `db:"id"`
+	Email        string    `db:"email"`
+	PasswordHash string    `db:"password_hash"`
+	CreatedAt    time.Time `db:"created_at"`
 }
 
 func ValidateUser(v *validator.Validator, u *SignupInput) {
