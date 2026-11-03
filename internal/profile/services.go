@@ -20,10 +20,10 @@ var (
 )
 
 type ProfileService struct {
-	store ProfileStore
+	store profileStore
 }
 
-func NewProfileService(store ProfileStore) *ProfileService {
+func NewProfileService(store profileStore) *ProfileService {
 	return &ProfileService{store: store}
 }
 

@@ -10,6 +10,7 @@ import (
 
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/osugodbless/forum-backend.git/internal/auth"
+	"github.com/osugodbless/forum-backend.git/internal/profile"
 )
 
 func init() {
@@ -35,8 +36,9 @@ func main() {
 	logger.Info("Database connected sucessfully")
 
 	auth := auth.New(pool, logger)
+	profile := profile.New(pool, logger)
 
-	mux := routes(auth)
+	mux := routes(auth, profile)
 
 	server := http.Server{
 		Addr:         fmt.Sprintf("%s:%d", cfg.server.host, cfg.server.port),
