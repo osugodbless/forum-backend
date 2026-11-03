@@ -21,10 +21,10 @@ var (
 )
 
 type AuthService struct {
-	store AuthStore
+	store authStore
 }
 
-func NewAuthService(store AuthStore) *AuthService {
+func NewAuthService(store authStore) *AuthService {
 	return &AuthService{
 		store: store,
 	}

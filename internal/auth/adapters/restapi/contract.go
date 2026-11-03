@@ -6,6 +6,6 @@ import (
 	"github.com/osugodbless/forum-backend.git/internal/auth/domain"
 )
 
-type AuthService interface {
+type authService interface {
 	SignUp(ctx context.Context, input domain.SignupInput) (*domain.User, error)
 }

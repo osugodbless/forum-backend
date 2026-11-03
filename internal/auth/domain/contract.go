@@ -2,9 +2,9 @@ package domain
 
 import "context"
 
-type AuthStore interface {
+type authStore interface {
 	Create(ctx context.Context, user *User) error
 }
 
-type ProfileCreator interface {
+type profileCreator interface {
 }

@@ -11,11 +11,11 @@ import (
 )
 
 type Handler struct {
-	service AuthService
+	service authService
 	*jsonutil.Responder
 }
 
-func NewHandler(service AuthService, responder *jsonutil.Responder) *Handler {
+func NewHandler(service authService, responder *jsonutil.Responder) *Handler {
 	return &Handler{
 		service:   service,
 		Responder: responder,
