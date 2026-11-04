@@ -44,9 +44,9 @@ func (u *UserModel) Create(ctx context.Context, user *domain.User) error {
 	return nil
 }
 
-// func (u *UserModel) GetByEmail(ctx context.Context, email string) (*User, error) {
-// 	return nil, nil
-// }
+func (u *UserModel) GetByEmail(ctx context.Context, email string) (*domain.User, error) {
+	return nil, nil
+}
 
 // func (u *UserModel) GetByID(ctx context.Context, id uuid.UUID) (*User, error) {
 // 	return nil, nil

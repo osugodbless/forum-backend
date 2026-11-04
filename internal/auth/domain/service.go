@@ -70,6 +70,24 @@ func (s *AuthService) SignUp(ctx context.Context, input SignupInput) (*User, err
 	return user, nil
 }
 
-func (s *AuthService) Login() {
+func (s *AuthService) Login(ctx context.Context, email, password string) (*User, error) {
+	// Normalize login input data
+	email = strings.ToLower(strings.TrimSpace(email))
 
+	v := validator.NewValidator()
+	if ValidateUser(v, &input); !v.Valid() {
+		return nil, validator.NewValidatorError(v.Errors)
+	}
+
+	user, err := s.store.GetByEmail(ctx, email)
+	if err != nil {
+		return nil, fmt.Errorf("auth service: %w", err)
+	}
+
+	err = bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(password))
+	if err != nil {
+		return nil, fmt.Errorf("auth service: %w", ErrInvalidCredentials)
+	}
+
+	return user, nil
 }

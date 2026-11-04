@@ -70,5 +70,11 @@ func toUserResponse(user *domain.User) *UserResponse {
 }
 
 func (h *Handler) handleLogin(w http.ResponseWriter, r *http.Request) {
+	var u LoginRequest
 
+	err := h.ReadJSON(w, r, &u)
+	if err != nil {
+		h.BadRequestResponse(w, r, err)
+		return
+	}
 }
