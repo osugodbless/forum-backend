@@ -7,20 +7,38 @@ import (
 
 	"github.com/google/uuid"
 
-	"github.com/osugodbless/forum-backend.git/internal/auth/domain"
+	"github.com/osugodbless/forum-backend/internal/auth/domain"
 
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
-	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-type UserModel struct {
-	pool *pgxpool.Pool
+type DBTX interface {
+	Exec(ctx context.Context, sql string, arguments ...any) (pgconn.CommandTag, error)
+	QueryRow(ctx context.Context, sql string, args ...any) pgx.Row
+	Query(ctx context.Context, sql string, args ...any) (pgx.Rows, error)
+	Begin(ctx context.Context) (pgx.Tx, error)
 }
 
-func NewUserModel(pool *pgxpool.Pool) *UserModel {
+type UserModel struct {
+	pool DBTX
+}
+
+func NewUserModel(pool DBTX) *UserModel {
 	return &UserModel{pool: pool}
+}
+
+func (m *UserModel) WithTx(tx pgx.Tx) *UserModel {
+	return &UserModel{pool: tx}
+}
+
+func (m *UserModel) Begin(ctx context.Context) (pgx.Tx, error) {
+	tx, err := m.pool.Begin(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return tx, nil
 }
 
 // CreateUser inserts a new user into the database and returns nil if user is created.

@@ -28,7 +28,7 @@ func NewProfileService(store profileStore) *ProfileService {
 	return &ProfileService{store: store}
 }
 
-func (ps *ProfileService) CreateProfile(ctx context.Context, userID uuid.UUID, fullName string) error {
+func (ps *ProfileService) CreateDefaultProfile(ctx context.Context, userID uuid.UUID, fullName string) error {
 	base := generateDefaultUsername(fullName)
 	defUsername := base
 
@@ -43,13 +43,19 @@ func (ps *ProfileService) CreateProfile(ctx context.Context, userID uuid.UUID, f
 			FullName:    fullName,
 			DisplayName: fullName,
 		}
-		err := ps.store.InsertProfile(ctx, profile)
-		if err != nil {
+
+		err := ps.store.InsertDefaultProfile(ctx, profile)
+		if err == nil {
+			return nil // Successfully inserted the profile
+		}
+
+		// error not due to username being taken, return the error
+		if !errors.Is(err, ErrUsernameTaken) {
 			return err
 		}
 	}
 
-	return nil
+	return errors.New("failed to generate a unique username after maximum retries")
 }
 
 func generateDefaultUsername(fullName string) string {

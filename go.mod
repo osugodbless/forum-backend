@@ -1,4 +1,4 @@
-module github.com/osugodbless/forum-backend.git
+module github.com/osugodbless/forum-backend
 
 go 1.27.1
 

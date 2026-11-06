@@ -112,10 +112,19 @@ func (res *Responder) ErrorResponse(w http.ResponseWriter, r *http.Request, stat
 	}
 }
 
+// 5xx responses
+
 func (res *Responder) ServerErrorResponse(w http.ResponseWriter, r *http.Request, err error) {
 	res.logError(r, err)
 	res.ErrorResponse(w, r, http.StatusInternalServerError, "the server encountered a problem and could not process your request")
 }
+
+func (res *Responder) GatewayTimeoutResponse(w http.ResponseWriter, r *http.Request, err error) {
+	res.logError(r, err)
+	res.ErrorResponse(w, r, http.StatusGatewayTimeout, "the server took too long to respond")
+}
+
+// 4xx responses
 
 func (res *Responder) BadRequestResponse(w http.ResponseWriter, r *http.Request, err error) {
 	res.ErrorResponse(w, r, http.StatusBadRequest, err.Error())
@@ -129,10 +138,10 @@ func (res *Responder) NotFoundResponse(w http.ResponseWriter, r *http.Request, e
 // 	res.ErrorResponse(w, r, http.StatusMethodNotAllowed, fmt.Sprintf("the %s method is not allowed for the requested resource", r.Method))
 // }
 
-func (res *Responder) FailedValidationResponse(w http.ResponseWriter, r *http.Request, errors map[string]string) {
-	res.ErrorResponse(w, r, http.StatusUnprocessableEntity, errors)
-}
-
 func (res *Responder) RequestConflictResponse(w http.ResponseWriter, r *http.Request, err error) {
 	res.ErrorResponse(w, r, http.StatusConflict, err.Error())
+}
+
+func (res *Responder) FailedValidationResponse(w http.ResponseWriter, r *http.Request, errors map[string]string) {
+	res.ErrorResponse(w, r, http.StatusUnprocessableEntity, errors)
 }

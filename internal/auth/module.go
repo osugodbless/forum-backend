@@ -5,20 +5,20 @@ import (
 	"net/http"
 
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/osugodbless/forum-backend.git/internal/auth/adapters/postgres"
-	"github.com/osugodbless/forum-backend.git/internal/auth/adapters/restapi"
-	"github.com/osugodbless/forum-backend.git/internal/auth/domain"
-	"github.com/osugodbless/forum-backend.git/internal/platform/jsonutil"
+	"github.com/osugodbless/forum-backend/internal/auth/adapters/postgres"
+	"github.com/osugodbless/forum-backend/internal/auth/adapters/restapi"
+	"github.com/osugodbless/forum-backend/internal/auth/domain"
+	"github.com/osugodbless/forum-backend/internal/platform/jsonutil"
 )
 
 type Module struct {
 	httpHandler *restapi.Handler
 }
 
-func New(db *pgxpool.Pool, logger *slog.Logger) *Module {
+func New(db *pgxpool.Pool, logger *slog.Logger, profile domain.ProfileCreator) *Module {
 	store := postgres.NewUserModel(db)
 
-	authService := domain.NewAuthService(store)
+	authService := domain.NewAuthService(store, profile)
 	responder := jsonutil.NewResponder(logger)
 	authHandler := restapi.NewHandler(authService, responder)
 

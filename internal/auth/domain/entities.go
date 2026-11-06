@@ -5,7 +5,7 @@ import (
 	"unicode/utf8"
 
 	"github.com/google/uuid"
-	"github.com/osugodbless/forum-backend.git/internal/platform/validator"
+	"github.com/osugodbless/forum-backend/internal/platform/validator"
 )
 
 type User struct {

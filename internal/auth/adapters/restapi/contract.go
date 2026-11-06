@@ -3,7 +3,7 @@ package restapi
 import (
 	"context"
 
-	"github.com/osugodbless/forum-backend.git/internal/auth/domain"
+	"github.com/osugodbless/forum-backend/internal/auth/domain"
 )
 
 type authService interface {

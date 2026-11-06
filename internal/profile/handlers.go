@@ -3,7 +3,7 @@ package profile
 import (
 	"net/http"
 
-	"github.com/osugodbless/forum-backend.git/internal/platform/jsonutil"
+	"github.com/osugodbless/forum-backend/internal/platform/jsonutil"
 )
 
 type Handler struct {

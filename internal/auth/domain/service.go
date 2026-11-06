@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	"github.com/google/uuid"
-	"github.com/osugodbless/forum-backend.git/internal/platform/validator"
+	"github.com/osugodbless/forum-backend/internal/platform/validator"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -16,17 +16,17 @@ var (
 	ErrUserAlreadyExists  = errors.New("email already in use")
 	ErrInvalidCredentials = errors.New("invalid email or password")
 	ErrResourceNotFound   = errors.New("the requested resource could not be found")
-
-	ErrIDGeneration = errors.New("user id generation failed")
 )
 
 type AuthService struct {
-	store authStore
+	store   authStore
+	profile ProfileCreator
 }
 
-func NewAuthService(store authStore) *AuthService {
+func NewAuthService(store authStore, profile ProfileCreator) *AuthService {
 	return &AuthService{
-		store: store,
+		store:   store,
+		profile: profile,
 	}
 }
 
@@ -46,21 +46,29 @@ func (s *AuthService) SignUp(ctx context.Context, input SignupInput) (*User, err
 		return nil, validator.NewValidatorError(v.Errors)
 	}
 
-	bytes, err := bcrypt.GenerateFromPassword([]byte(input.Password), bcrypt.DefaultCost)
+	hash, err := bcrypt.GenerateFromPassword([]byte(input.Password), bcrypt.DefaultCost)
 	if err != nil {
 		return nil, fmt.Errorf("error hashing password: %w", err)
 	}
 
 	userID, err := uuid.NewV7()
 	if err != nil {
-		return nil, fmt.Errorf("%w: %w", ErrIDGeneration, err)
+		return nil, errors.New("user id generation failed")
 	}
 
 	user := &User{
 		ID:           userID,
 		Email:        input.Email,
-		PasswordHash: string(bytes),
+		PasswordHash: string(hash),
 	}
+
+	tx, err := s.store.Begin(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("starting registration transaction: %w", err)
+	}
+	defer tx.Rollback(ctx)
+
+	s.store.WithTx(tx)
 
 	err = s.store.CreateUser(ctx, user)
 	if err != nil {

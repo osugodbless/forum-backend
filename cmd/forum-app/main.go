@@ -9,8 +9,8 @@ import (
 	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/osugodbless/forum-backend.git/internal/auth"
-	"github.com/osugodbless/forum-backend.git/internal/profile"
+	"github.com/osugodbless/forum-backend/internal/auth"
+	"github.com/osugodbless/forum-backend/internal/profile"
 )
 
 func init() {
@@ -35,8 +35,8 @@ func main() {
 
 	logger.Info("Database connected sucessfully")
 
-	auth := auth.New(pool, logger)
 	profile := profile.New(pool, logger)
+	auth := auth.New(pool, logger, profile.Service)
 
 	mux := routes(auth, profile)
 

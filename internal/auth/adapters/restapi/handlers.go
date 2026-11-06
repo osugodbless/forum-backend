@@ -1,13 +1,14 @@
 package restapi
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/http"
 
-	"github.com/osugodbless/forum-backend.git/internal/auth/domain"
-	"github.com/osugodbless/forum-backend.git/internal/platform/jsonutil"
-	"github.com/osugodbless/forum-backend.git/internal/platform/validator"
+	"github.com/osugodbless/forum-backend/internal/auth/domain"
+	"github.com/osugodbless/forum-backend/internal/platform/jsonutil"
+	"github.com/osugodbless/forum-backend/internal/platform/validator"
 )
 
 type Handler struct {
@@ -43,8 +44,10 @@ func (h *Handler) handleSignUp(w http.ResponseWriter, r *http.Request) {
 			h.FailedValidationResponse(w, r, validationErr.Errors)
 		case errors.Is(err, domain.ErrUserAlreadyExists):
 			h.RequestConflictResponse(w, r, domain.ErrUserAlreadyExists)
-		case errors.Is(err, domain.ErrIDGeneration):
-			h.ServerErrorResponse(w, r, domain.ErrIDGeneration)
+		case errors.Is(err, context.Canceled):
+			return
+		case errors.Is(err, context.DeadlineExceeded):
+			h.GatewayTimeoutResponse(w, r, err)
 		default:
 			h.ServerErrorResponse(w, r, err)
 		}
