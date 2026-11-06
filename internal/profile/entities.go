@@ -2,7 +2,8 @@ package profile
 
 import (
 	"time"
-	"uuid"
+
+	"github.com/google/uuid"
 )
 
 type UserProfile struct {

@@ -2,7 +2,8 @@ package profile
 
 import (
 	"context"
-	"uuid"
+
+	"github.com/google/uuid"
 )
 
 type profileServiceManager interface {

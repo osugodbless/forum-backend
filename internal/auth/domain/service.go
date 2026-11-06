@@ -42,7 +42,7 @@ func (s *AuthService) SignUp(ctx context.Context, input SignupInput) (*User, err
 	input.Email = strings.ToLower(strings.TrimSpace(input.Email))
 
 	v := validator.NewValidator()
-	if ValidateUser(v, &input); !v.Valid() {
+	if ValidateUser(v, input.FullName, input.Email, input.Password); !v.Valid() {
 		return nil, validator.NewValidatorError(v.Errors)
 	}
 
@@ -62,7 +62,7 @@ func (s *AuthService) SignUp(ctx context.Context, input SignupInput) (*User, err
 		PasswordHash: string(bytes),
 	}
 
-	err = s.store.Create(ctx, user)
+	err = s.store.CreateUser(ctx, user)
 	if err != nil {
 		return nil, fmt.Errorf("auth service: %w", err)
 	}
@@ -75,11 +75,11 @@ func (s *AuthService) Login(ctx context.Context, email, password string) (*User,
 	email = strings.ToLower(strings.TrimSpace(email))
 
 	v := validator.NewValidator()
-	if ValidateUser(v, &input); !v.Valid() {
+	if ValidateUser(v, "", email, password); !v.Valid() {
 		return nil, validator.NewValidatorError(v.Errors)
 	}
 
-	user, err := s.store.GetByEmail(ctx, email)
+	user, err := s.store.GetUserByEmail(ctx, email)
 	if err != nil {
 		return nil, fmt.Errorf("auth service: %w", err)
 	}

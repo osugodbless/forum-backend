@@ -9,7 +9,8 @@ import (
 	"regexp"
 	"strings"
 	"unicode/utf8"
-	"uuid"
+
+	"github.com/google/uuid"
 )
 
 var nonAlphaNumericRegex = regexp.MustCompile(`[^a-z0-9]+`)
