@@ -68,6 +68,8 @@ func (s *AuthService) SignUp(ctx context.Context, input SignupInput) (*User, err
 	}
 	defer tx.Rollback(ctx)
 
+	s.WithTx(tx)
+
 	s.store.WithTx(tx)
 
 	err = s.store.CreateUser(ctx, user)
