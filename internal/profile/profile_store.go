@@ -6,43 +6,29 @@ import (
 	"fmt"
 
 	"github.com/jackc/pgerrcode"
-	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
+	"github.com/osugodbless/forum-backend/internal/platform/database"
 )
 
-type DBTX interface {
-	Exec(ctx context.Context, sql string, arguments ...any) (pgconn.CommandTag, error)
-	QueryRow(ctx context.Context, sql string, args ...any) pgx.Row
-	Query(ctx context.Context, sql string, args ...any) (pgx.Rows, error)
-	Begin(ctx context.Context) (pgx.Tx, error)
-}
-
 type ProfileModel struct {
-	pool DBTX
+	pool database.DBTX
 }
 
-func (m *ProfileModel) Begin(ctx context.Context) (pgx.Tx, error) {
-	tx, err := m.pool.Begin(ctx)
-	if err != nil {
-		return nil, err
-	}
-	return tx, nil
-}
-
-func NewProfileModel(pool DBTX) *ProfileModel {
+func NewProfileModel(pool database.DBTX) *ProfileModel {
 	return &ProfileModel{pool: pool}
 }
 
-func (p *ProfileModel) WithTx(tx pgx.Tx) *ProfileModel {
-	return &ProfileModel{pool: tx}
+func (m *ProfileModel) db(ctx context.Context) database.DBTX {
+	return database.Executor(ctx, m.pool)
 }
 
 func (p *ProfileModel) InsertDefaultProfile(ctx context.Context, profile *UserProfile) error {
 	const query = `
 		INSERT INTO profile.profiles (user_id, username, full_name, display_name)
 		VALUES ($1, $2, $3, $4)
+		ON CONFLICT ON CONSTRAINT uq_profile_username DO NOTHING
 	`
-	_, err := p.pool.Exec(ctx, query, profile.UserID, profile.Username, profile.FullName, profile.DisplayName)
+	_, err := p.db(ctx).Exec(ctx, query, profile.UserID, profile.Username, profile.FullName, profile.DisplayName)
 	if err != nil {
 		return translateErr("Insert Profile", err)
 	}
@@ -69,5 +55,5 @@ func translateErr(op string, err error) error {
 		}
 	}
 
-	return nil
+	return fmt.Errorf("%s: %w", op, err)
 }

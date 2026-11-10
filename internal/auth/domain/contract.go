@@ -4,11 +4,10 @@ import (
 	"context"
 
 	"github.com/google/uuid"
-	"github.com/jackc/pgx/v5"
 )
 
+// authStore is implemented by internal/auth/adapters/postgres.UserModel
 type authStore interface {
-	Begin(ctx context.Context) (pgx.Tx, error)
 	CreateUser(ctx context.Context, user *User) error
 	GetUserByEmail(ctx context.Context, email string) (*User, error)
 	GetUserByID(ctx context.Context, id uuid.UUID) (*User, error)
@@ -18,6 +17,12 @@ type authStore interface {
 	DeleteUser(ctx context.Context, id uuid.UUID) error
 }
 
+// TxManager is implemented by platform/database.TxManager
+type TxManager interface {
+	WithinTx(ctx context.Context, fn func(ctx context.Context) error) error
+}
+
+// ProfileCreator is implemented by internal/profile.Service
 type ProfileCreator interface {
 	CreateDefaultProfile(ctx context.Context, userID uuid.UUID, fullName string) error
 }

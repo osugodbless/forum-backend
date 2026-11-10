@@ -59,17 +59,28 @@ func (ps *ProfileService) CreateDefaultProfile(ctx context.Context, userID uuid.
 }
 
 func generateDefaultUsername(fullName string) string {
-	s := strings.ToLower(fullName)
-	s = nonAlphaNumericRegex.ReplaceAllString(s, "")
-	if utf8.RuneCountInString(s) < 3 {
-		s = "real_" + s
+	sliceFullName := strings.Fields(strings.ToLower(fullName))
+
+	var username string
+
+	if len(sliceFullName) >= 2 {
+		username = strings.Join(sliceFullName[:2], "")
+	} else {
+		username = strings.Join(sliceFullName, "")
 	}
 
-	runes := []rune(s)
-	if len(runes) > 24 {
-		s = string(runes[:24])
+	username = nonAlphaNumericRegex.ReplaceAllString(username, "")
+
+	if utf8.RuneCountInString(username) < 3 {
+		username = "real_" + username
 	}
-	return s
+
+	runes := []rune(username)
+	if len(runes) > 24 {
+		username = string(runes[:24])
+	}
+
+	return username
 }
 
 // RandomSuffix generates a short alphanumeric suffix (e.g., "9x2a").

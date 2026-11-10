@@ -20,12 +20,14 @@ var (
 
 type AuthService struct {
 	store   authStore
+	tx      TxManager
 	profile ProfileCreator
 }
 
-func NewAuthService(store authStore, profile ProfileCreator) *AuthService {
+func NewAuthService(store authStore, tx TxManager, profile ProfileCreator) *AuthService {
 	return &AuthService{
 		store:   store,
+		tx:      tx,
 		profile: profile,
 	}
 }
@@ -37,7 +39,7 @@ type SignupInput struct {
 }
 
 func (s *AuthService) SignUp(ctx context.Context, input SignupInput) (*User, error) {
-	// Normalize signup input data
+	// Normalize signup data
 	input.FullName = strings.Join(strings.Fields(input.FullName), " ")
 	input.Email = strings.ToLower(strings.TrimSpace(input.Email))
 
@@ -53,7 +55,7 @@ func (s *AuthService) SignUp(ctx context.Context, input SignupInput) (*User, err
 
 	userID, err := uuid.NewV7()
 	if err != nil {
-		return nil, errors.New("user id generation failed")
+		return nil, fmt.Errorf("sign up: generate user id: %w", err)
 	}
 
 	user := &User{
@@ -62,19 +64,14 @@ func (s *AuthService) SignUp(ctx context.Context, input SignupInput) (*User, err
 		PasswordHash: string(hash),
 	}
 
-	tx, err := s.store.Begin(ctx)
+	err = s.tx.WithinTx(ctx, func(ctx context.Context) error {
+		if err := s.store.CreateUser(ctx, user); err != nil {
+			return err
+		}
+		return s.profile.CreateDefaultProfile(ctx, user.ID, input.FullName)
+	})
 	if err != nil {
-		return nil, fmt.Errorf("starting registration transaction: %w", err)
-	}
-	defer tx.Rollback(ctx)
-
-	s.WithTx(tx)
-
-	s.store.WithTx(tx)
-
-	err = s.store.CreateUser(ctx, user)
-	if err != nil {
-		return nil, fmt.Errorf("auth service: %w", err)
+		return nil, fmt.Errorf("auth service: sign up: %w", err)
 	}
 
 	return user, nil

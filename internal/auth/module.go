@@ -4,10 +4,10 @@ import (
 	"log/slog"
 	"net/http"
 
-	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/osugodbless/forum-backend/internal/auth/adapters/postgres"
 	"github.com/osugodbless/forum-backend/internal/auth/adapters/restapi"
 	"github.com/osugodbless/forum-backend/internal/auth/domain"
+	"github.com/osugodbless/forum-backend/internal/platform/database"
 	"github.com/osugodbless/forum-backend/internal/platform/jsonutil"
 )
 
@@ -15,11 +15,18 @@ type Module struct {
 	httpHandler *restapi.Handler
 }
 
-func New(db *pgxpool.Pool, logger *slog.Logger, profile domain.ProfileCreator) *Module {
-	store := postgres.NewUserModel(db)
+type Deps struct {
+	Logger  *slog.Logger
+	DB      database.DBTX
+	Tx      domain.TxManager
+	Profile domain.ProfileCreator
+}
 
-	authService := domain.NewAuthService(store, profile)
-	responder := jsonutil.NewResponder(logger)
+func New(d Deps) *Module {
+	store := postgres.NewUserModel(d.DB)
+
+	authService := domain.NewAuthService(store, d.Tx, d.Profile)
+	responder := jsonutil.NewResponder(d.Logger)
 	authHandler := restapi.NewHandler(authService, responder)
 
 	return &Module{httpHandler: authHandler}

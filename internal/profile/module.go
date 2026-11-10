@@ -4,7 +4,7 @@ import (
 	"log/slog"
 	"net/http"
 
-	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/osugodbless/forum-backend/internal/platform/database"
 	"github.com/osugodbless/forum-backend/internal/platform/jsonutil"
 )
 
@@ -13,11 +13,16 @@ type Module struct {
 	httpHandler *Handler
 }
 
-func New(db *pgxpool.Pool, logger *slog.Logger) *Module {
-	store := NewProfileModel(db)
+type Deps struct {
+	Logger *slog.Logger
+	DB     database.DBTX
+}
+
+func New(d Deps) *Module {
+	store := NewProfileModel(d.DB)
 
 	profileService := NewProfileService(store)
-	responder := jsonutil.NewResponder(logger)
+	responder := jsonutil.NewResponder(d.Logger)
 	profileHandler := NewHandler(profileService, responder)
 
 	return &Module{

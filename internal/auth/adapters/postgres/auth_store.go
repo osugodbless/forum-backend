@@ -8,37 +8,23 @@ import (
 	"github.com/google/uuid"
 
 	"github.com/osugodbless/forum-backend/internal/auth/domain"
+	"github.com/osugodbless/forum-backend/internal/platform/database"
 
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 )
 
-type DBTX interface {
-	Exec(ctx context.Context, sql string, arguments ...any) (pgconn.CommandTag, error)
-	QueryRow(ctx context.Context, sql string, args ...any) pgx.Row
-	Query(ctx context.Context, sql string, args ...any) (pgx.Rows, error)
-	Begin(ctx context.Context) (pgx.Tx, error)
-}
-
 type UserModel struct {
-	pool DBTX
+	pool database.DBTX
 }
 
-func NewUserModel(pool DBTX) *UserModel {
+func NewUserModel(pool database.DBTX) *UserModel {
 	return &UserModel{pool: pool}
 }
 
-func (m *UserModel) WithTx(tx pgx.Tx) *UserModel {
-	return &UserModel{pool: tx}
-}
-
-func (m *UserModel) Begin(ctx context.Context) (pgx.Tx, error) {
-	tx, err := m.pool.Begin(ctx)
-	if err != nil {
-		return nil, err
-	}
-	return tx, nil
+func (m *UserModel) db(ctx context.Context) database.DBTX {
+	return database.Executor(ctx, m.pool)
 }
 
 // CreateUser inserts a new user into the database and returns nil if user is created.
@@ -51,7 +37,7 @@ func (m *UserModel) CreateUser(ctx context.Context, user *domain.User) error {
 		VALUES ($1, $2, $3)
 		RETURNING created_at`
 
-	err := m.pool.QueryRow(ctx, query, user.ID, user.Email, user.PasswordHash).Scan(&user.CreatedAt)
+	err := m.db(ctx).QueryRow(ctx, query, user.ID, user.Email, user.PasswordHash).Scan(&user.CreatedAt)
 	if err != nil {
 		return translateErr("Create User", err)
 	}
@@ -94,7 +80,7 @@ func (m *UserModel) UserExistsByEmail(ctx context.Context, email string) (bool, 
 		)`
 
 	var exists bool
-	err := m.pool.QueryRow(ctx, query, email).Scan(&exists)
+	err := m.db(ctx).QueryRow(ctx, query, email).Scan(&exists)
 	if err != nil {
 		return false, translateErr("User Exists By Email", err)
 	}
@@ -113,7 +99,7 @@ func (m *UserModel) UserExistsByID(ctx context.Context, id uuid.UUID) (bool, err
 		)`
 
 	var exists bool
-	err := m.pool.QueryRow(ctx, query, id).Scan(&exists)
+	err := m.db(ctx).QueryRow(ctx, query, id).Scan(&exists)
 	if err != nil {
 		return false, translateErr("User Exists By ID", err)
 	}
@@ -128,7 +114,7 @@ func (m *UserModel) UpdatePasswordHash(ctx context.Context, id uuid.UUID, newHas
 		SET password_hash = $1
 		WHERE id = $2`
 
-	tag, err := m.pool.Exec(ctx, query, newHash, id)
+	tag, err := m.db(ctx).Exec(ctx, query, newHash, id)
 	if err != nil {
 		return translateErr("Update Password Hash", err)
 	}
@@ -146,7 +132,7 @@ func (m *UserModel) DeleteUser(ctx context.Context, id uuid.UUID) error {
 		DELETE FROM auth.users
 		WHERE id = $1`
 
-	tag, err := m.pool.Exec(ctx, query, id)
+	tag, err := m.db(ctx).Exec(ctx, query, id)
 	if err != nil {
 		return translateErr("Delete User", err)
 	}
@@ -161,7 +147,7 @@ func (m *UserModel) DeleteUser(ctx context.Context, id uuid.UUID) error {
 // queryRow runs a single-row query and scans it straight into a domain.User.
 func (m *UserModel) queryRow(ctx context.Context, op, query string, arg ...any) (*domain.User, error) {
 	var user domain.User
-	err := m.pool.QueryRow(ctx, query, arg...).Scan(&user.ID, &user.Email, &user.PasswordHash, &user.CreatedAt)
+	err := m.db(ctx).QueryRow(ctx, query, arg...).Scan(&user.ID, &user.Email, &user.PasswordHash, &user.CreatedAt)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, domain.ErrUserNotFound
@@ -181,7 +167,7 @@ func translateErr(op string, err error) error {
 		case pgerrcode.UniqueViolation:
 			return domain.ErrUserAlreadyExists
 		case pgerrcode.CheckViolation:
-			// data should have been validated already, so if we get here it's a bug upstream.
+			// data should have been validated/normalized already, so if we get here it's a bug upstream.
 			return fmt.Errorf("%s: check constraint %q violated: %w", op, pgErr.ConstraintName, err)
 		}
 	}
