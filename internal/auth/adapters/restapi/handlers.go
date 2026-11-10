@@ -32,11 +32,7 @@ func (h *Handler) handleSignUp(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user, err := h.service.SignUp(r.Context(), domain.SignupInput{
-		FullName: u.FullName,
-		Email:    u.Email,
-		Password: u.Password,
-	})
+	user, err := h.service.SignUp(r.Context(), u.Email, u.Password)
 	if err != nil {
 		var validationErr *validator.Validator
 		switch {
@@ -79,5 +75,28 @@ func (h *Handler) handleLogin(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		h.BadRequestResponse(w, r, err)
 		return
+	}
+
+	user, err := h.service.Login(r.Context(), u.Email, u.Password)
+	if err != nil {
+		var validationErr *validator.Validator
+		switch {
+		case errors.As(err, &validationErr):
+			h.FailedValidationResponse(w, r, validationErr.Errors)
+		case errors.Is(err, domain.ErrInvalidCredentials) || errors.Is(err, domain.ErrUserNotFound):
+			h.UnauthorizedResponse(w, r, domain.ErrInvalidCredentials)
+		case errors.Is(err, context.Canceled):
+			return
+		case errors.Is(err, context.DeadlineExceeded):
+			h.GatewayTimeoutResponse(w, r, err)
+		default:
+			h.ServerErrorResponse(w, r, err)
+		}
+		return
+	}
+
+	err = h.WriteJSON(w, http.StatusOK, toUserResponse(user), nil)
+	if err != nil {
+		h.ServerErrorResponse(w, r, err)
 	}
 }

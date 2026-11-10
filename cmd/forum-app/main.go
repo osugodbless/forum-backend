@@ -10,7 +10,6 @@ import (
 
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/osugodbless/forum-backend/internal/auth"
-	"github.com/osugodbless/forum-backend/internal/platform/database"
 	"github.com/osugodbless/forum-backend/internal/profile"
 )
 
@@ -36,17 +35,15 @@ func main() {
 
 	logger.Info("Database connected sucessfully")
 
-	txManager := database.NewTxManager(pool)
+	// txManager := database.NewTxManager(pool)
 
 	profile := profile.New(profile.Deps{
 		Logger: logger,
 		DB:     pool,
 	})
 	auth := auth.New(auth.Deps{
-		Logger:  logger,
-		DB:      pool,
-		Tx:      txManager,
-		Profile: profile.Service,
+		Logger: logger,
+		DB:     pool,
 	})
 
 	mux := routes(auth, profile)

@@ -7,5 +7,6 @@ import (
 )
 
 type authService interface {
-	SignUp(ctx context.Context, input domain.SignupInput) (*domain.User, error)
+	SignUp(ctx context.Context, email, password string) (*domain.User, error)
+	Login(ctx context.Context, email, password string) (*domain.User, error)
 }

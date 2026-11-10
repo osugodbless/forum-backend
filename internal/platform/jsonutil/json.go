@@ -130,6 +130,10 @@ func (res *Responder) BadRequestResponse(w http.ResponseWriter, r *http.Request,
 	res.ErrorResponse(w, r, http.StatusBadRequest, err.Error())
 }
 
+func (res *Responder) UnauthorizedResponse(w http.ResponseWriter, r *http.Request, err error) {
+	res.ErrorResponse(w, r, http.StatusUnauthorized, err.Error())
+}
+
 func (res *Responder) NotFoundResponse(w http.ResponseWriter, r *http.Request, err error) {
 	res.ErrorResponse(w, r, http.StatusNotFound, err.Error())
 }

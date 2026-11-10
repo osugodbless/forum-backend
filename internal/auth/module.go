@@ -16,16 +16,14 @@ type Module struct {
 }
 
 type Deps struct {
-	Logger  *slog.Logger
-	DB      database.DBTX
-	Tx      domain.TxManager
-	Profile domain.ProfileCreator
+	Logger *slog.Logger
+	DB     database.DBTX
 }
 
 func New(d Deps) *Module {
 	store := postgres.NewUserModel(d.DB)
 
-	authService := domain.NewAuthService(store, d.Tx, d.Profile)
+	authService := domain.NewAuthService(store)
 	responder := jsonutil.NewResponder(d.Logger)
 	authHandler := restapi.NewHandler(authService, responder)
 

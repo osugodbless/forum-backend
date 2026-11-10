@@ -16,13 +16,3 @@ type authStore interface {
 	UpdatePasswordHash(ctx context.Context, id uuid.UUID, newHash string) error
 	DeleteUser(ctx context.Context, id uuid.UUID) error
 }
-
-// TxManager is implemented by platform/database.TxManager
-type TxManager interface {
-	WithinTx(ctx context.Context, fn func(ctx context.Context) error) error
-}
-
-// ProfileCreator is implemented by internal/profile.Service
-type ProfileCreator interface {
-	CreateDefaultProfile(ctx context.Context, userID uuid.UUID, fullName string) error
-}

@@ -4,7 +4,6 @@ import "time"
 
 // DTOs (Data Transfer Object)
 type SignupRequest struct {
-	FullName string `json:"full_name"`
 	Email    string `json:"email"`
 	Password string `json:"password"`
 }

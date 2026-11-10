@@ -11,6 +11,11 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
+const (
+	// dummyHash is a bcrypt hash of a random password used for timing attack mitigation.
+	dummyHash = "$2a$10$WkcuMITsGEtdm/ScvldHzekBfu9qXc0ANJZa3lcF7qvER0Nag2s1S"
+)
+
 var (
 	ErrUserNotFound       = errors.New("user not found")
 	ErrUserAlreadyExists  = errors.New("email already in use")
@@ -19,36 +24,25 @@ var (
 )
 
 type AuthService struct {
-	store   authStore
-	tx      TxManager
-	profile ProfileCreator
+	store authStore
 }
 
-func NewAuthService(store authStore, tx TxManager, profile ProfileCreator) *AuthService {
+func NewAuthService(store authStore) *AuthService {
 	return &AuthService{
-		store:   store,
-		tx:      tx,
-		profile: profile,
+		store: store,
 	}
 }
 
-type SignupInput struct {
-	FullName string
-	Email    string
-	Password string
-}
-
-func (s *AuthService) SignUp(ctx context.Context, input SignupInput) (*User, error) {
+func (s *AuthService) SignUp(ctx context.Context, email, password string) (*User, error) {
 	// Normalize signup data
-	input.FullName = strings.Join(strings.Fields(input.FullName), " ")
-	input.Email = strings.ToLower(strings.TrimSpace(input.Email))
+	email = strings.ToLower(strings.TrimSpace(email))
 
 	v := validator.NewValidator()
-	if ValidateUser(v, input.FullName, input.Email, input.Password); !v.Valid() {
+	if ValidateUser(v, email, password); !v.Valid() {
 		return nil, validator.NewValidatorError(v.Errors)
 	}
 
-	hash, err := bcrypt.GenerateFromPassword([]byte(input.Password), bcrypt.DefaultCost)
+	hash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
 		return nil, fmt.Errorf("error hashing password: %w", err)
 	}
@@ -60,16 +54,11 @@ func (s *AuthService) SignUp(ctx context.Context, input SignupInput) (*User, err
 
 	user := &User{
 		ID:           userID,
-		Email:        input.Email,
+		Email:        email,
 		PasswordHash: string(hash),
 	}
 
-	err = s.tx.WithinTx(ctx, func(ctx context.Context) error {
-		if err := s.store.CreateUser(ctx, user); err != nil {
-			return err
-		}
-		return s.profile.CreateDefaultProfile(ctx, user.ID, input.FullName)
-	})
+	err = s.store.CreateUser(ctx, user)
 	if err != nil {
 		return nil, fmt.Errorf("auth service: sign up: %w", err)
 	}
@@ -78,22 +67,25 @@ func (s *AuthService) SignUp(ctx context.Context, input SignupInput) (*User, err
 }
 
 func (s *AuthService) Login(ctx context.Context, email, password string) (*User, error) {
-	// Normalize login input data
+	// Normalize login data
 	email = strings.ToLower(strings.TrimSpace(email))
 
 	v := validator.NewValidator()
-	if ValidateUser(v, "", email, password); !v.Valid() {
+	if ValidateUser(v, email, password); !v.Valid() {
 		return nil, validator.NewValidatorError(v.Errors)
 	}
 
 	user, err := s.store.GetUserByEmail(ctx, email)
 	if err != nil {
-		return nil, fmt.Errorf("auth service: %w", err)
+		// Mitigate timing attacks
+		_ = bcrypt.CompareHashAndPassword([]byte(dummyHash), []byte(password))
+
+		return nil, fmt.Errorf("auth service: login: %w", err)
 	}
 
 	err = bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(password))
 	if err != nil {
-		return nil, fmt.Errorf("auth service: %w", ErrInvalidCredentials)
+		return nil, fmt.Errorf("auth service: login: %w", ErrInvalidCredentials)
 	}
 
 	return user, nil

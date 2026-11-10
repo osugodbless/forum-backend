@@ -18,17 +18,16 @@ func NewProfileModel(pool database.DBTX) *ProfileModel {
 	return &ProfileModel{pool: pool}
 }
 
-func (m *ProfileModel) db(ctx context.Context) database.DBTX {
-	return database.Executor(ctx, m.pool)
-}
+// func (m *ProfileModel) db(ctx context.Context) database.DBTX {
+// 	return database.Executor(ctx, m.pool)
+// }
 
 func (p *ProfileModel) InsertDefaultProfile(ctx context.Context, profile *UserProfile) error {
 	const query = `
 		INSERT INTO profile.profiles (user_id, username, full_name, display_name)
 		VALUES ($1, $2, $3, $4)
-		ON CONFLICT ON CONSTRAINT uq_profile_username DO NOTHING
 	`
-	_, err := p.db(ctx).Exec(ctx, query, profile.UserID, profile.Username, profile.FullName, profile.DisplayName)
+	_, err := p.pool.Exec(ctx, query, profile.UserID, profile.Username, profile.FullName, profile.DisplayName)
 	if err != nil {
 		return translateErr("Insert Profile", err)
 	}
