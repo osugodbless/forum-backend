@@ -9,13 +9,19 @@ type Module interface {
 	RegisterRoutes(mux *http.ServeMux)
 }
 
-func routes(modules ...Module) *http.ServeMux {
+func routes(modules ...Module) http.Handler {
 	mux := http.NewServeMux()
+
+	handleHealthCheck(mux)
 
 	for _, module := range modules {
 		module.RegisterRoutes(mux)
 	}
 
+	return SetSecurityHeaders(mux)
+}
+
+func handleHealthCheck(mux *http.ServeMux) {
 	mux.HandleFunc("/v1/healthcheck", func(w http.ResponseWriter, r *http.Request) {
 		serverHealth := struct {
 			Status     string            `json:"status"`
@@ -33,6 +39,4 @@ func routes(modules ...Module) *http.ServeMux {
 		}
 
 	})
-
-	return mux
 }
